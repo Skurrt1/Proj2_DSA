@@ -21,6 +21,22 @@ struct Rating {
     int votes;
 };
 
+// IMDb uses "\N" for missing values. Return -1 in that case.
+int toIntOrMissing(const std::string& s) {
+    if (s == "\\N") return -1;
+    return std::stoi(s);
+}
+
+// Split "Drama,Comedy" into {"Drama", "Comedy"}
+std::vector<std::string> splitGenres(const std::string& s) {
+    std::vector<std::string> genres;
+    if (s == "\\N") return genres;
+    std::string g;
+    std::istringstream ss(s);
+    while (std::getline(ss, g, ',')) genres.push_back(g);
+    return genres;
+}
+
 int main() {
     std::ifstream file("data/title.ratings.tsv");
     if (!file) { std::cout << "Could not open file\n"; return 1; }
@@ -37,9 +53,42 @@ int main() {
 
     std::cout << "Ratings loaded: " << ratings.size() << "\n";
 
-    // Spot check: The Shawshank Redemption
-    auto it = ratings.find("tt0111161");
-    if (it != ratings.end())
-        std::cout << "tt0111161 -> rating " << it->second.avg
-                  << ", votes " << it->second.votes << "\n";
+    // ---- Read basics and join with ratings ----
+    std::ifstream basics("data/title.basics.tsv");
+    if (!basics) { std::cout << "Could not open basics file\n"; return 1; }
+
+    std::vector<Title> titles;
+    titles.reserve(ratings.size());
+    std::getline(basics, line); // skip header
+
+    // Columns: 0 tconst, 1 titleType, 2 primaryTitle, 3 originalTitle,
+    // 4 isAdult, 5 startYear, 6 endYear, 7 runtimeMinutes, 8 genres
+
+    while (std::getline(basics, line)) {
+        auto parts = splitTabs(line);
+        if (parts.size() < 9) continue;
+
+        auto it = ratings.find(parts[0]);
+        if (it == ratings.end()) continue;   // no rating -> skip (this is the join)
+
+        Title t;
+        t.id      = parts[0];
+        t.type    = parts[1];
+        t.name    = parts[2];
+        t.year    = toIntOrMissing(parts[5]);
+        t.runtime = toIntOrMissing(parts[7]);
+        t.genres  = splitGenres(parts[8]);
+        t.rating  = it->second.avg;
+        t.votes   = it->second.votes;
+        titles.push_back(t);
+    }
+
+    std::cout << "Titles after join: " << titles.size() << "\n";
+
+    // Spot check: print the first 3 titles
+    for (int i = 0; i < 3 && i < (int)titles.size(); i++) {
+        std::cout << titles[i].id << " | " << titles[i].name << " | "
+                  << titles[i].year << " | " << titles[i].rating
+                  << " | " << titles[i].votes << "\n";
+    }
 }
