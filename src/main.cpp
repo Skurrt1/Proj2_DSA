@@ -6,13 +6,15 @@
 #include <unordered_map>
 #include <vector>
 
+using namespace std;
+
 // Quick test
 // Split "tt0000001\t5.7\t2238" into {"tt0000001", "5.7", "2238"}
-std::vector<std::string> splitTabs(const std::string& line) {
-    std::vector<std::string> parts;
-    std::string field;
-    std::istringstream ss(line);
-    while (std::getline(ss, field, '\t')) parts.push_back(field);
+vector<string> splitTabs(const string& line) {
+    vector<string> parts;
+    string field;
+    istringstream ss(line);
+    while (getline(ss, field, '\t')) parts.push_back(field);
     return parts;
 }
 
@@ -22,49 +24,49 @@ struct Rating {
 };
 
 // IMDb uses "\N" for missing values. Return -1 in that case.
-int toIntOrMissing(const std::string& s) {
+int toIntOrMissing(const string& s) {
     if (s == "\\N") return -1;
-    return std::stoi(s);
+    return stoi(s);
 }
 
 // Split "Drama,Comedy" into {"Drama", "Comedy"}
-std::vector<std::string> splitGenres(const std::string& s) {
-    std::vector<std::string> genres;
+vector<string> splitGenres(const string& s) {
+    vector<string> genres;
     if (s == "\\N") return genres;
-    std::string g;
-    std::istringstream ss(s);
-    while (std::getline(ss, g, ',')) genres.push_back(g);
+    string g;
+    istringstream ss(s);
+    while (getline(ss, g, ',')) genres.push_back(g);
     return genres;
 }
 
 int main() {
-    std::ifstream file("data/title.ratings.tsv");
-    if (!file) { std::cout << "Could not open file\n"; return 1; }
+    ifstream file("data/title.ratings.tsv");
+    if (!file) { cout << "Could not open file\n"; return 1; }
 
-    std::unordered_map<std::string, Rating> ratings;
-    std::string line;
-    std::getline(file, line); // skip header
+    unordered_map<string, Rating> ratings;
+    string line;
+    getline(file, line); // skip header
 
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         auto parts = splitTabs(line);
         if (parts.size() < 3) continue;          // skip broken lines
-        ratings[parts[0]] = { std::stod(parts[1]), std::stoi(parts[2]) };
+        ratings[parts[0]] = { stod(parts[1]), stoi(parts[2]) };
     }
 
-    std::cout << "Ratings loaded: " << ratings.size() << "\n";
+    cout << "Ratings loaded: " << ratings.size() << "\n";
 
     // ---- Read basics and join with ratings ----
-    std::ifstream basics("data/title.basics.tsv");
-    if (!basics) { std::cout << "Could not open basics file\n"; return 1; }
+    ifstream basics("data/title.basics.tsv");
+    if (!basics) { cout << "Could not open basics file\n"; return 1; }
 
-    std::vector<Title> titles;
+    vector<Title> titles;
     titles.reserve(ratings.size());
-    std::getline(basics, line); // skip header
+    getline(basics, line); // skip header
 
     // Columns: 0 tconst, 1 titleType, 2 primaryTitle, 3 originalTitle,
     // 4 isAdult, 5 startYear, 6 endYear, 7 runtimeMinutes, 8 genres
 
-    while (std::getline(basics, line)) {
+    while (getline(basics, line)) {
         auto parts = splitTabs(line);
         if (parts.size() < 9) continue;
 
@@ -83,12 +85,12 @@ int main() {
         titles.push_back(t);
     }
 
-    std::cout << "Titles after join: " << titles.size() << "\n";
+    cout << "Titles after join: " << titles.size() << "\n";
 
-    // Spot check: print the first 3 titles
+    // check: print the first 3 titles
     for (int i = 0; i < 3 && i < (int)titles.size(); i++) {
-        std::cout << titles[i].id << " | " << titles[i].name << " | "
-                  << titles[i].year << " | " << titles[i].rating
-                  << " | " << titles[i].votes << "\n";
+        cout << titles[i].id << " | " << titles[i].name << " | "
+             << titles[i].year << " | " << titles[i].rating
+             << " | " << titles[i].votes << "\n";
     }
 }
