@@ -10,3 +10,4 @@ test_sorts
 # Full IMDb files are hundreds of MB; each person downloads them locally.
 data/*.tsv
 data/*.tsv.gz
+.DS_Store
