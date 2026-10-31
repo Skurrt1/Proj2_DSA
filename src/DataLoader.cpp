@@ -8,54 +8,74 @@
 
 using namespace std;
 
-// Split "tt0000001\t5.7\t2238" into {"tt0000001", "5.7", "2238"}
-vector<string> splitTabs(const string& line) {
-    vector<string> parts;
-    string field;
-    istringstream ss(line);
-    while (getline(ss, field, '\t')) parts.push_back(field);
-    return parts;
-}
-
 struct Rating {
     double avg;
     int votes;
 };
 
-// IMDb uses "\N" for missing values. Return -1 in that case.
+// Splitting the data input
+// Eample - tt0000001\t5.7\t2238 into {"tt0000001", "5.7", "2238"}
+vector<string> splitTabs(const string& line) {
+
+    vector<string> parts;
+    string field;
+    istringstream ss(line);
+
+    while (getline(ss, field, '\t')){
+        parts.push_back(field);
+    } 
+
+    return parts;
+}
+
+// IMDb uses "\N" for missing values
+// Return -1 in that case.
 int toIntOrMissing(const string& s) {
-    if (s == "\\N") return -1;
+    if (s == "\\N"){
+        return -1;
+    }
+
     return stoi(s);
 }
 
-// Split "Drama,Comedy" into {"Drama", "Comedy"}
+// Split Genres
+// Example- "Drama,Comedy" into {"Drama", "Comedy"}
 vector<string> splitGenres(const string& s) {
+
     vector<string> genres;
-    if (s == "\\N") return genres;
+
+    if (s == "\\N"){
+        return genres;
+    }
+
     string g;
     istringstream ss(s);
-    while (getline(ss, g, ',')) genres.push_back(g);
+
+    while (getline(ss, g, ',')){
+        genres.push_back(g);
+    }
+
     return genres;
 }
 
 vector<Title> loadTitles(const string& basicsPath, const string& ratingsPath) {
     vector<Title> titles;
 
-    // ---- Read ratings into a map ----
+    // Reads the data file; title.ratings
     ifstream file(ratingsPath);
     if (!file) { cout << "Could not open " << ratingsPath << "\n"; return titles; }
 
     unordered_map<string, Rating> ratings;
     string line;
-    getline(file, line); // skip header
+    getline(file, line); //skip header
 
     while (getline(file, line)) {
         auto parts = splitTabs(line);
-        if (parts.size() < 3) continue;          // skip broken lines
+        if (parts.size() < 3) continue; //skip broken lines
         ratings[parts[0]] = { stod(parts[1]), stoi(parts[2]) };
     }
 
-    // ---- Read basics and join with ratings ----
+    // Read the data files; title.basics and joins title.ratings
     ifstream basics(basicsPath);
     if (!basics) { cout << "Could not open " << basicsPath << "\n"; return titles; }
 

@@ -3,14 +3,16 @@
 #include <string>
 #include <vector>
 
-std::vector<Title> loadTitles(const std::string& basicsPath, const std::string& ratingsPath);
+using namespace std;
+
+vector<Title> loadTitles(const string& basicsPath, const string& ratingsPath);
 
 // Filters from the "Set Filters" menu. Empty string / 0 means "no filter".
 struct Filters {
-    std::string type;    // e.g. "movie", "tvSeries"
-    std::string genre;   // e.g. "Documentary"
+    std::string type;    // example "movie", "tvSeries"
+    std::string genre;   // example "Documentary"
     int minVotes = 0;
 };
 
 // Returns only the titles that match every filter that's set.
-std::vector<Title> applyFilters(const std::vector<Title>& all, const Filters& f);
+vector<Title> applyFilters(const vector<Title>& all, const Filters& f);
