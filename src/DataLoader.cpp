@@ -85,3 +85,21 @@ vector<Title> loadTitles(const string& basicsPath, const string& ratingsPath) {
 
     return titles;
 }
+
+vector<Title> applyFilters(const vector<Title>& all, const Filters& f) {
+    vector<Title> result;
+    for (const Title& t : all) {
+        if (!f.type.empty() && t.type != f.type) continue;   // wrong type
+        if (t.votes < f.minVotes) continue;                  // too few votes
+
+        if (!f.genre.empty()) {                              // must have this genre
+            bool hasGenre = false;
+            for (const string& g : t.genres) {
+                if (g == f.genre) { hasGenre = true; break; }
+            }
+            if (!hasGenre) continue;
+        }
+        result.push_back(t);
+    }
+    return result;
+}

@@ -13,4 +13,12 @@ int main() {
              << titles[i].year << " | " << titles[i].rating
              << " | " << titles[i].votes << "\n";
     }
+
+    // test filters: documentary movies with at least 10,000 votes
+    Filters f;
+    f.type = "movie";
+    f.genre = "Documentary";
+    f.minVotes = 10000;
+    vector<Title> docs = applyFilters(titles, f);
+    cout << "Documentary movies with 10k+ votes: " << docs.size() << "\n";
 }
