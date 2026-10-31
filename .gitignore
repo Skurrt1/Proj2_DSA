@@ -1,0 +1,12 @@
+build/
+cmake-build-*/
+.vscode/
+.idea/
+*.o
+*.exe
+top_billed
+test_sorts
+
+# Full IMDb files are hundreds of MB; each person downloads them locally.
+data/*.tsv
+data/*.tsv.gz
