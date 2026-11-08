@@ -4,6 +4,10 @@
 #include <functional>   
 #include <iomanip>      
 #include <iostream>
+#include <chrono>
+#include <iomanip>
+#include <random>
+#include <vector>
 
 using namespace std;
 
@@ -148,12 +152,134 @@ void Menu::setFilters() {
     }
 }
 
+
 void Menu::benchmark() {
 
-    // TODO: run merge sort and quicksort on the same input
-    // TODO: print time and comparison count for each
-    cout << "Benchmark - coming soon\n";
+    if (filtered_.empty()) {
+        cout << "No titles available to benchmark.\n";
+        return;
+    }
+
+    // Benchmark using rating, highest first.
+    SortKey key = SortKey::Rating;
+    Order order = Order::Descending;
+
+    Comparator ordering(key, order);
+
+    // Different dataset sizes.
+    vector<int> sizes = {100, 1000, 10000, 100000};
+
+    cout << "\n========== SORT BENCHMARK ==========\n";
+    cout << "Sorting by Rating (Descending)\n";
+
+    for (int size : sizes) {
+
+        if (size > (int)filtered_.size()) {
+            continue;
+        }
+
+        // Copy the same number of titles.
+        vector<Title> original(
+            filtered_.begin(),
+            filtered_.begin() + size
+        );
+
+        // Test three input orderings.
+        for (int test = 0; test < 3; test++) {
+
+            vector<Title> input = original;
+
+            string testName;
+
+            if (test == 0) {
+                testName = "Random";
+
+                mt19937 rng(42);
+                shuffle(input.begin(), input.end(), rng);
+            }
+            else if (test == 1) {
+                testName = "Sorted";
+
+                ordering.reset();
+                stable_sort(input.begin(), input.end(),
+                            ref(ordering));
+            }
+            else {
+                testName = "Reversed";
+
+                ordering.reset();
+                stable_sort(input.begin(), input.end(),
+                            ref(ordering));
+
+                reverse(input.begin(), input.end());
+            }
+
+            // Each algorithm gets an identical input.
+            vector<Title> mergeData = input;
+            vector<Title> quickData = input;
+
+            Comparator mergeCmp(key, order);
+            Comparator quickCmp(key, order);
+
+            // -------- MERGE SORT --------
+
+            auto mergeStart =
+                chrono::steady_clock::now();
+
+            mergeSort(mergeData, mergeCmp);
+
+            auto mergeEnd =
+                chrono::steady_clock::now();
+
+            double mergeTime =
+                chrono::duration<double, milli>(
+                    mergeEnd - mergeStart
+                ).count();
+
+            // -------- QUICK SORT --------
+
+            auto quickStart =
+                chrono::steady_clock::now();
+
+            quickSort(quickData, quickCmp);
+
+            auto quickEnd =
+                chrono::steady_clock::now();
+
+            double quickTime =
+                chrono::duration<double, milli>(
+                    quickEnd - quickStart
+                ).count();
+
+            // -------- RESULTS --------
+
+            cout << "\nSize: " << size
+                 << " | Input: " << testName << "\n";
+
+            cout << left
+                 << setw(15) << "Algorithm"
+                 << setw(18) << "Time (ms)"
+                 << "Comparisons\n";
+
+            cout << fixed << setprecision(3);
+
+            cout << left
+                 << setw(15) << "Merge Sort"
+                 << setw(18) << mergeTime
+                 << mergeCmp.comparisons()
+                 << "\n";
+
+            cout << left
+                 << setw(15) << "Quick Sort"
+                 << setw(18) << quickTime
+                 << quickCmp.comparisons()
+                 << "\n";
+        }
+    }
+
+    cout << "\n========== END BENCHMARK ==========\n";
 }
+
 
 int Menu::readChoice(int low, int high) {
     int choice;
