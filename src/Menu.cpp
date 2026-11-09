@@ -1,4 +1,6 @@
 #include "Menu.h"
+#include "MergeSort.h"
+#include "QuickSort.h"
 #include "Comparator.h"
 #include <algorithm>    
 #include <functional>   
