@@ -131,9 +131,27 @@ void Menu::rankTitles() {
 
 void Menu::setFilters() {
 
-    // TODO: ask type, genre, min votes
-    // TODO: update filters_ and filtered_ = applyFilters(all_, filters_)
-    cout << "Set filters - coming soon\n";
+    //ask type, genre, min votes
+    cout << "\nEnter type ('all' for no filter): ";
+
+    cin.ignore(10000, '\n'); 
+    getline(cin, filters_.type);
+
+    cout << "\nEnter genre ('all' for no filter): ";
+
+    getline(cin, filters_.genre);
+
+    cout << "\nEnter minimum votes (0 for no filter): ";
+    filters_.minVotes = readChoice(0, 1000000);
+
+    //update filters_ and filtered_ = applyFilters(all_, filters_)
+    filtered_ = applyFilters(all_, filters_);
+
+    if (filtered_.empty()) {
+        cout << "\nNo titles match the current filters.\n";
+    } else {
+        cout << "\nFilters applied successfully. " << filtered_.size() << " titles match.\n";
+    }
 }
 
 
