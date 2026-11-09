@@ -109,10 +109,10 @@ vector<Title> loadTitles(const string& basicsPath, const string& ratingsPath) {
 vector<Title> applyFilters(const vector<Title>& all, const Filters& f) {
     vector<Title> result;
     for (const Title& t : all) {
-        if (!f.type.empty() && t.type != f.type) continue;   // wrong type
+        if (!f.type.empty() && f.type != "all" && t.type != f.type) continue;   // wrong type
         if (t.votes < f.minVotes) continue;                  // too few votes
 
-        if (!f.genre.empty()) {                              // must have this genre
+        if (!f.genre.empty() && f.genre != "all") {                              // must have this genre
             bool hasGenre = false;
             for (const string& g : t.genres) {
                 if (g == f.genre) { hasGenre = true; break; }
